@@ -663,6 +663,31 @@ function toggleCat(c){
   saveQZ(); QuizMenu();
 }
 
+/* ---------- distractors ----------
+   The real difficulty lever: not how many wrong answers, but how close they sit.
+   Easy pulls from far-flung eras and rival parties; hard pulls the target's
+   nearest neighbours in number, era and party. Extra Hard matches Hard here —
+   its bite is the missing autofill, not the options. */
+function pickDistractors(pool,t,need,getText,correctText,rand){
+  const near=p=>Math.abs(p.n-t.n)+Math.abs(p.start-t.start)/8+(partyKey(p.party)===partyKey(t.party)?0:8);
+  const diff=QZ.diff==="extra"?"hard":QZ.diff;
+  let arr=pool.slice();
+  if(diff==="hard"){
+    arr.sort((a,b)=>near(a)-near(b));
+    arr=shuffle(arr.slice(0,Math.max(need*2,need+2)),rand);
+  }else if(diff==="easy"){
+    arr.sort((a,b)=>near(b)-near(a));
+    arr=shuffle(arr.slice(0,Math.max(need*3,need+4)),rand);
+  }else{
+    arr.sort((a,b)=>near(a)-near(b));
+    arr=shuffle(arr.slice(0,Math.max(need*6,Math.ceil(arr.length*0.5))),rand);
+  }
+  const out=[],seen=new Set([correctText]);
+  const take=list=>{for(const p of list){const tx=getText(p);if(!seen.has(tx)){seen.add(tx);out.push(tx);}if(out.length>=need)return true;}return false;};
+  if(!take(arr)) take(shuffle(pool,rand));   // top up if the narrow band ran dry
+  return out;
+}
+
 /* ---------- answer matching ----------
    Generous but never ambiguous: full name always works; "first last" works when
    there's a middle initial; a bare surname works only when it belongs to exactly
