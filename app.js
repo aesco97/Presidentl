@@ -129,9 +129,51 @@ function saveState(s){try{localStorage.setItem(KEY,JSON.stringify(s));}catch(e){
    App shell
    ============================================================ */
 const app=document.getElementById("app");
-const toastEl=document.getElementById("toast");
+let toastEl=document.getElementById("toast");
 let toastT;
-function toast(msg){toastEl.textContent=msg;toastEl.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>toastEl.classList.remove("show"),1600);}
+// Self-healing: if the page didn't ship a #toast element, make one. A missing
+// toast must never throw — it's called mid-click-handler, so an exception here
+// kills the round in progress.
+function toast(msg){
+  if(!toastEl || !toastEl.isConnected){
+    toastEl=document.getElementById("toast");
+    if(!toastEl){
+      toastEl=document.createElement("div");
+      toastEl.className="toast"; toastEl.id="toast";
+      document.body.appendChild(toastEl);
+    }
+  }
+  toastEl.textContent=msg; toastEl.classList.add("show");
+  clearTimeout(toastT); toastT=setTimeout(()=>toastEl.classList.remove("show"),1600);
+}
+
+/* ============================================================
+   SHARING — every result, always with a link back
+   ============================================================ */
+const SITE="https://presidentl.app";
+// Native share sheet where there is one, clipboard everywhere else.
+function shareText(txt){
+  if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); return; }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>toast("Result copied")).catch(()=>toast("Couldn't copy"));
+    return;
+  }
+  toast("Sharing not supported");
+}
+// Emoji grid of pass/fail flags, wrapped every `per` columns.
+function emojiGrid(flags, per){
+  const rows=[];
+  for(let i=0;i<flags.length;i+=per) rows.push(flags.slice(i,i+per).map(f=>f?"🟩":"⬜").join(""));
+  return rows.join("\n");
+}
+// Every share ends with a link, so a screenshot in a group chat is an invitation.
+function shareResult(headline, body, path){
+  shareText([headline, body, SITE+(path||"")].filter(Boolean).join("\n"));
+}
+function shareBtn(label, fn){
+  const b=el(`<button class="btn" style="margin-top:12px">${label||"Share result"}</button>`);
+  b.onclick=fn; return b;
+}
 // Returns a single element when the template has one root, otherwise a
 // DocumentFragment so multi-root templates render all of their blocks.
 function el(html){
@@ -549,9 +591,7 @@ function Daily(){
 
   function shareG(){
     const rows=guesses.map(n=>cellsFor(P.find(p=>p.n===n)).map(c=>c.cls==="g"?"🟩":c.cls==="y"?"🟨":"⬜").join("")).join("\n");
-    const txt=`PRESIDENTL No. ${puzzleNo()}\n${win?guesses.length:"X"}/${MAX_GUESSES}\n`+rows;
-    if(navigator.share)navigator.share({text:txt}).catch(()=>{});
-    else{navigator.clipboard?.writeText(txt);toast("Result copied");}
+    shareResult(`PRESIDENTL No. ${puzzleNo()} — ${win?guesses.length:"X"}/${MAX_GUESSES}`, rows, "/play");
   }
 
   function renderEnd(){
@@ -877,7 +917,11 @@ function NameThemAll(){
     });
     app.appendChild(list);
     const btns=el('<div class="sect"></div>');
-    const again=el('<button class="btn">Try again</button>'); again.onclick=NameThemAll; btns.appendChild(again);
+    btns.appendChild(shareBtn("Share result",()=>shareResult(
+      `PRESIDENTL · Name Them All (${DIFF[QZ.diff].label.toLowerCase()}) — ${got}/${P.length}`,
+      emojiGrid(answers.map(a=>!!(a&&a.ok)),10), "/quiz")));
+    btns.appendChild(el('<div style="height:10px"></div>'));
+    const again=el('<button class="btn secondary">Try again</button>'); again.onclick=NameThemAll; btns.appendChild(again);
     btns.appendChild(el('<div style="height:10px"></div>'));
     const back=el('<button class="btn secondary">Change setup</button>'); back.onclick=QuizMenu; btns.appendChild(back);
     app.appendChild(btns); endPage();
@@ -949,7 +993,11 @@ function Learning(drill){
       <div class="tagline">All learned${misses?` — after ${misses} miss${misses>1?"es":""}`:", first time through"}.</div>
     </div>`));
     const b=el('<div class="sect"></div>');
-    const again=el('<button class="btn">Go again</button>'); again.onclick=()=>Learning(drill); b.appendChild(again);
+    b.appendChild(shareBtn("Share result",()=>shareResult(
+      `PRESIDENTL · Learning (${drill==="order"?"the order":"trivia"})`,
+      `Learned all ${total}${misses?` — after ${misses} miss${misses>1?"es":""}`:", first time through"}.`, "/quiz")));
+    b.appendChild(el('<div style="height:10px"></div>'));
+    const again=el('<button class="btn secondary">Go again</button>'); again.onclick=()=>Learning(drill); b.appendChild(again);
     b.appendChild(el('<div style="height:10px"></div>'));
     const back=el('<button class="btn secondary">Change setup</button>'); back.onclick=QuizMenu; b.appendChild(back);
     app.appendChild(b); endPage();
@@ -1011,7 +1059,7 @@ function Trivia(){
   const rand=rngFrom("trivia-"+Date.now());
   const endless=QZ.count===0;
   const total=endless?Infinity:QZ.count;
-  let i=0, score=0;
+  let i=0, score=0; const marks=[];
   function next(){
     if(i>=total) return result();
     clear(); app.appendChild(el(header('quiz')));
@@ -1022,6 +1070,7 @@ function Trivia(){
     app.appendChild(wrap);
     askTrivia(wrap.querySelector("#q"), spec, rand, ok=>{
       if(ok) score++;
+      marks.push(!!ok);
       const cont=el('<button class="btn" style="margin-top:12px">'+(endless?"Next":(i+1>=total?"See result":"Next"))+'</button>');
       cont.onclick=()=>{i++;next();};
       wrap.querySelector("#q").appendChild(cont);
@@ -1043,7 +1092,11 @@ function Trivia(){
         :score/asked>=.7?"A solid showing.":score/asked>=.5?"Room to revise.":"The Republic forgives you."}</div>
     </div>`));
     const b=el('<div class="sect"></div>');
-    const again=el('<button class="btn">Play again</button>'); again.onclick=Trivia; b.appendChild(again);
+    b.appendChild(shareBtn("Share result",()=>shareResult(
+      `PRESIDENTL · Trivia (${DIFF[QZ.diff].label.toLowerCase()}) — ${score}/${marks.length}`,
+      emojiGrid(marks,10), "/quiz")));
+    b.appendChild(el('<div style="height:10px"></div>'));
+    const again=el('<button class="btn secondary">Play again</button>'); again.onclick=Trivia; b.appendChild(again);
     b.appendChild(el('<div style="height:10px"></div>'));
     const back=el('<button class="btn secondary">Change setup</button>'); back.onclick=QuizMenu; b.appendChild(back);
     app.appendChild(b); endPage();
