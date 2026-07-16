@@ -13,3 +13,6 @@
 # Node (only if you ever add tooling)
 node_modules/
 npm-debug.log*
+
+# build sources (not deployed)
+src/
