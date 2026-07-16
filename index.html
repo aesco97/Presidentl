@@ -30,6 +30,35 @@
 <meta name="twitter:title" content="Presidentl — the daily presidential guessing game">
 <meta name="twitter:description" content="Six guesses. Five clues. One Commander-in-Chief. A new puzzle every midnight.">
 <meta name="twitter:image" content="https://presidentl.app/og.png">
+
+<!-- Google Consent Mode v2 — must run BEFORE any Google tag.
+     Everything is denied by default in the EEA/UK/Switzerland until a
+     Google-certified CMP (AdSense → Privacy & messaging) records a choice. -->
+<script>
+  window.dataLayer=window.dataLayer||[];
+  function gtag(){dataLayer.push(arguments);}
+  // Rest of world: granted by default.
+  gtag('consent','default',{
+    ad_storage:'granted', ad_user_data:'granted',
+    ad_personalization:'granted', analytics_storage:'granted'
+  });
+  // EEA + UK + Switzerland: denied until the CMP updates it.
+  gtag('consent','default',{
+    region:['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LI',
+            'LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','NO','GB','CH'],
+    ad_storage:'denied', ad_user_data:'denied',
+    ad_personalization:'denied', analytics_storage:'denied',
+    wait_for_update:500
+  });
+</script>
+
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5719025993543828" crossorigin="anonymous"></script>
+
+<!-- Vercel Web Analytics (cookieless). Static sites need this tag —
+     switching it on in the dashboard alone collects nothing. -->
+<script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};</script>
+<script defer src="/_vercel/insights/script.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Libre+Franklin:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -84,6 +113,10 @@
   .grid{display:grid;gap:10px;}
   .prose{font-size:13px;color:var(--ink-2);line-height:1.7;}
   .prose p{margin:0 0 12px;}
+  .prose h2{font-family:var(--display);font-size:15px;color:var(--blue);font-weight:400;
+    margin:20px 0 8px;padding-top:12px;border-top:1px dashed var(--rule);}
+  .prose a{color:var(--blue);font-weight:600;}
+  .prose a:hover{color:var(--red);}
 
   /* Board */
   .board{padding:16px 16px 8px;display:flex;flex-direction:column;gap:6px;}
@@ -216,7 +249,7 @@
 
   /* Page footer */
   .pgfoot{margin-top:auto;padding:22px 16px calc(18px + var(--safe-bot));text-align:center;}
-  .pgfoot .links{display:flex;gap:14px;justify-content:center;}
+  .pgfoot .links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
   .pgfoot .links button{background:none;border:none;color:var(--ink-4);font-family:var(--text);
     font-size:10.5px;font-weight:700;letter-spacing:.1em;cursor:pointer;padding:4px;}
   .pgfoot .links button:hover{color:var(--red);}
@@ -399,6 +432,7 @@ function header(active){
         <button onclick="navTo('/about')">ABOUT</button>
         <button onclick="navTo('/privacy')">PRIVACY</button>
         <button onclick="navTo('/terms')">TERMS</button>
+        <button onclick="navTo('/contact')">CONTACT</button>
         <button onclick="navTo('/more')">MORE GAMES</button>
       </div>
     </div>
@@ -409,11 +443,14 @@ function pageFoot(){
   return `<div class="pgfoot">
     <div class="bunting sm"></div>
     <div class="links">
-      <button onclick="navTo('/about')">ABOUT</button><button onclick="navTo('/privacy')">PRIVACY</button><button onclick="navTo('/terms')">TERMS</button>
+      <button onclick="navTo('/about')">ABOUT</button><button onclick="navTo('/privacy')">PRIVACY</button><button onclick="navTo('/terms')">TERMS</button><button onclick="navTo('/contact')">CONTACT</button>
     </div>
     <div class="copy">© 2026 PRESIDENTL · A NEW PUZZLE EVERY MIDNIGHT</div>
   </div>`;
 }
+/* Ads are handled by AdSense Auto ads — Google injects placements itself via the
+   tag in <head>. No manual ad units here. Control placement/density in
+   AdSense → Ads → your site, not in this file. */
 function endPage(){app.appendChild(el(pageFoot()));}
 /* Puzzle number — epoch chosen so 15 Jul 2026 = No. 213 */
 function puzzleNo(){
@@ -528,7 +565,26 @@ function About(){
     <p>Each day at midnight a new Commander-in-Chief takes office in secret. You have six guesses. Every guess you cast reveals how close you stand on five measures: their number in the line of succession, how many vice presidents served under them, the year they were sworn in, their party, and how many terms they held.</p>
     <p>Green is exact. Gold is close. Arrows point you toward the answer.</p>
     <p>Fancy a longer session? The <b>Pub Quiz</b> in the menu runs endlessly — order them by term, match vice presidents and events, or name the portrait.</p>
-    <p>Portraits are public-domain works. Presidential facts are drawn from the historical record; every president links out to their full biography.</p>`);
+    <p>Portraits are public-domain works. Presidential facts are drawn from the historical record; every president links out to their full biography.</p>
+    <h2>Who makes this</h2>
+    <p>Presidentl is built and maintained by <b>Keystone Dynamic</b>, a small studio making daily quiz games with care. We also make <a href="https://orbil.app" target="_blank" rel="noopener">Orbil</a>, the daily globe game.</p>
+    <h2>How it's paid for</h2>
+    <p>Presidentl is free and always will be. It is supported by advertising, which is clearly labelled and kept away from the game controls. We don't run interstitials, we don't gate the puzzle, and we don't sell your data — see our <a href="#/privacy">privacy policy</a>.</p>
+    <h2>Corrections</h2>
+    <p>History is argued over, and we get things wrong. If you spot an error, write to <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a> and we'll fix it.</p>`);
+}
+/* Published contact route — AdSense review expects a working one. */
+const CONTACT_EMAIL="kstdyn@gmail.com";
+function Contact(){
+  staticPage("THE MAILBAG","CONTACT",`
+    <p>Presidentl is made by Keystone Dynamic. We read everything, and we answer most of it.</p>
+    <p><b>Email:</b> <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></p>
+    <p>Good reasons to write: you've found a factual error in the historical record (we would like to
+    know, and we reserve the right to be humbled); a portrait looks wrong; something is broken on
+    your device; you have a mode you'd like to see; or you want to talk about advertising or
+    partnerships.</p>
+    <p>We aim to reply within a few days. Please include your device and browser if you're reporting
+    a bug — it saves a round trip.</p>`);
 }
 function MoreGames(){
   clear();
@@ -556,10 +612,65 @@ function MoreGames(){
 }
 function Privacy(){
   staticPage("THE FINE PRINT","PRIVACY",`
-    <p>Presidentl collects nothing. There is no account, no sign-up, no tracking pixel, and no advertising.</p>
-    <p>Your streak, your record, and today's progress are stored only in your own browser, on your own device, using local storage. We never see them. Clear your browser data and they are gone for good — there is no copy on any server.</p>
-    <p>Portrait images may load from Wikipedia when a local copy isn't bundled. Those requests go to Wikimedia and are governed by their privacy policy.</p>
-    <p>No cookies are set. No data is sold, because none is gathered.</p>`);
+    <p><b>Last updated:</b> ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</p>
+
+    <p>Presidentl is operated by Keystone Dynamic. This policy explains what is collected when you
+    play, who else receives data, and how to opt out. There is no account and no sign-up.</p>
+
+    <h2>What we store on your device</h2>
+    <p>Your streak, win record, guess distribution, today's progress and your chosen quiz difficulty
+    are kept in your browser's local storage, on your device. This is not a cookie, it is never sent
+    to us, and we cannot read it. Clearing your browser data erases it permanently — there is no
+    copy on any server.</p>
+
+    <h2>Analytics</h2>
+    <p>We use Vercel Web Analytics to count visits and see which pages are used. It is
+    privacy-friendly and cookieless: it does not use cookies, does not fingerprint you, and does not
+    track you across other websites. It records aggregate data such as page URL, referrer, country,
+    browser and device type. We cannot identify you from it.</p>
+
+    <h2>Advertising</h2>
+    <p>Presidentl is supported by advertising served through Google AdSense. Specifically:</p>
+    <p>• Third-party vendors, including Google, use cookies to serve ads based on your prior visits
+    to this website or other websites.</p>
+    <p>• Google's use of advertising cookies enables it and its partners to serve ads to you based on
+    your visit to this site and/or other sites on the Internet.</p>
+    <p>• You may opt out of personalised advertising by visiting
+    <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google Ads Settings</a>.</p>
+    <p>• You may opt out of third-party vendors' use of cookies for personalised advertising at
+    <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">aboutads.info/choices</a>
+    or <a href="https://optout.networkadvertising.org/" target="_blank" rel="noopener">optout.networkadvertising.org</a>.</p>
+    <p>Google may use the DoubleClick cookie, or similar identifiers, to serve ads based on your
+    visits to this and other sites. Ad networks may collect IP address, device identifiers and
+    interaction data. We do not receive that data and we do not control it.</p>
+
+    <h2>If you are in the EEA, the UK or Switzerland</h2>
+    <p>Before any personalised advertising cookie is set, you will be asked for consent through a
+    Google-certified consent management platform. Until you make a choice, advertising and analytics
+    storage are switched off by default. You can change or withdraw your consent at any time through
+    the privacy settings link in that consent tool. You also have the right to access, correct,
+    export or erase personal data, and to complain to your local supervisory authority. Because we
+    hold no account data, most requests are best directed to Google using the links above.</p>
+
+    <h2>If you are in California</h2>
+    <p>We do not sell or share personal information in the conventional sense, and we receive no
+    money for personal data. Advertising cookies set by Google may nonetheless be treated as
+    "sharing" for cross-context behavioural advertising under the CCPA/CPRA. You can opt out using
+    the Google and industry links above, or by enabling a Global Privacy Control signal in your
+    browser, which we honour where it is transmitted.</p>
+
+    <h2>Portraits</h2>
+    <p>Presidential portraits are bundled with the site. If one is unavailable, the app may request
+    it from Wikipedia; such requests go to the Wikimedia Foundation and are governed by their
+    privacy policy. Wikipedia links are marked and open in a new tab.</p>
+
+    <h2>Children</h2>
+    <p>Presidentl is not directed to children under 13 and we do not knowingly collect personal
+    information from them.</p>
+
+    <h2>Changes and contact</h2>
+    <p>If this policy changes materially, the date above will change. Questions about privacy can be
+    sent to <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>.</p>`);
 }
 function Terms(){
   staticPage("THE FINE PRINT","TERMS",`
@@ -1080,7 +1191,7 @@ function PhotoQuiz(){
    ============================================================ */
 const ROUTES={
   "/":Home, "/play":Daily, "/quiz":QuizMenu, "/stats":Stats,
-  "/about":About, "/privacy":Privacy, "/terms":Terms, "/more":MoreGames
+  "/about":About, "/privacy":Privacy, "/terms":Terms, "/contact":Contact, "/more":MoreGames
 };
 const TITLES={
   "/":"Presidentl — the daily presidential guessing game",
@@ -1090,6 +1201,7 @@ const TITLES={
   "/about":"About · Presidentl",
   "/privacy":"Privacy · Presidentl",
   "/terms":"Terms · Presidentl",
+  "/contact":"Contact · Presidentl",
   "/more":"More games · Presidentl"
 };
 function navTo(path){
