@@ -21,7 +21,6 @@
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
     },
     {
-      "comment": "All the logic lives here now — never let a stale copy outlive a deploy.",
       "source": "/(app.js|style.css)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
     },
