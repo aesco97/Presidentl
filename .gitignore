@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Design source archives — not part of the deployed site
+*.zip
+
+# Vercel
+.vercel
+
+# Node (only if you ever add tooling)
+node_modules/
+npm-debug.log*
