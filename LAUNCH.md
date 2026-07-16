@@ -75,6 +75,44 @@ Hash routing means each page is linkable and the Back button works:
 /#/more      more games (Orbil)
 ```
 
+## Indexing, then AdSense review — in that order
+
+Do these in sequence. Requesting review before Google has crawled the site is the
+most common way to collect an avoidable rejection.
+
+### 1. Search Console
+
+1. [Google Search Console](https://search.google.com/search-console) → *Add property* → **Domain** → `presidentl.app`.
+2. It'll give you a TXT record. Add it at your registrar's DNS, then click Verify.
+   (Domain property covers www/apex/http/https in one go — simpler than the URL-prefix option.)
+3. *Sitemaps* → submit `sitemap.xml`.
+4. *URL Inspection* → paste each URL → **Request Indexing**:
+   - `https://presidentl.app/`
+   - `https://presidentl.app/about`
+   - `https://presidentl.app/privacy`
+5. On the homepage, use *Test Live URL* → *View Tested Page* and confirm Google sees the
+   rendered game, not a blank shell.
+
+Indexing usually takes a few days. Check *Pages* for "Indexed" before moving on.
+
+### 2. Then AdSense
+
+1. AdSense → *Sites* → add `presidentl.app`.
+2. **Privacy & messaging** → turn on the GDPR message (the certified CMP) and publish it.
+   Do this *before* review — EEA traffic without it is a policy breach.
+3. Confirm `presidentl.app/ads.txt` loads and matches your publisher ID.
+4. *Request review.*
+
+### Why the URLs look like this
+
+Google indexes URLs and ignores `#fragments`, so `/#/about` could never be indexed —
+it's the same URL as `/`. That's why About and Privacy are real HTML files
+(`about.html`, `privacy.html`, served at `/about` and `/privacy` via `cleanUrls`)
+with their text in the source rather than drawn by JavaScript. The game itself stays a
+single-page app; its internal routes (`/#/play`, `/#/quiz`, `/#/stats`, `/#/more`) are
+for humans and the Back button, not for crawlers, and are deliberately absent from the
+sitemap. `/contact` and `/terms` 301-redirect to the merged pages.
+
 ## Updating the game later
 
 Re-drag the folder onto Vercel, or run `vercel --prod` again. `vercel.json` tells browsers never to cache `index.html`, so players get updates on their next visit. The portraits are cached for a year — if you ever swap one, rename it (e.g. `16-v2.jpg`) so caches don't serve the old image.

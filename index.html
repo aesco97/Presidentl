@@ -95,9 +95,10 @@
   .burger{width:34px;height:34px;display:grid;place-items:center;background:none;border:none;cursor:pointer;padding:0;}
   .menu{position:absolute;top:calc(100% + 8px);right:12px;background:var(--paper-2);border:2px solid var(--blue);
     box-shadow:4px 4px 0 rgba(46,74,122,.25);padding:4px;display:flex;flex-direction:column;min-width:150px;z-index:30;}
-  .menu button{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--blue);padding:12px;min-height:44px;
-    border:none;background:none;text-align:left;border-bottom:1px dashed var(--rule);cursor:pointer;font-family:var(--text);}
-  .menu button:last-child{border-bottom:none;}
+  .menu button,.menu a{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--blue);padding:12px;min-height:44px;
+    border:none;background:none;text-align:left;border-bottom:1px dashed var(--rule);cursor:pointer;
+    font-family:var(--text);text-decoration:none;display:block;}
+  .menu button:last-child,.menu a:last-child{border-bottom:none;}
 
   /* Masthead */
   .masthead{text-align:center;padding:22px 20px 4px;}
@@ -250,14 +251,37 @@
   /* Page footer */
   .pgfoot{margin-top:auto;padding:22px 16px calc(18px + var(--safe-bot));text-align:center;}
   .pgfoot .links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
-  .pgfoot .links button{background:none;border:none;color:var(--ink-4);font-family:var(--text);
-    font-size:10.5px;font-weight:700;letter-spacing:.1em;cursor:pointer;padding:4px;}
-  .pgfoot .links button:hover{color:var(--red);}
+  .pgfoot .links button,.pgfoot .links a{background:none;border:none;color:var(--ink-4);font-family:var(--text);
+    font-size:10.5px;font-weight:700;letter-spacing:.1em;cursor:pointer;padding:4px;text-decoration:none;}
+  .pgfoot .links button:hover,.pgfoot .links a:hover{color:var(--red);}
   .pgfoot .copy{font-size:10px;color:var(--ink-5);margin-top:8px;letter-spacing:.06em;}
 </style>
 </head>
 <body>
-<div id="app"></div>
+<div id="app">
+  <div class="bunting"></div>
+  <div class="hdr">
+    <span class="wordmark">PRESIDENTL</span>
+  </div>
+  <div class="masthead">
+    <div class="kicker">★ THE DAILY PRESIDENTIAL GUESSING GAME ★</div>
+    <h1 class="hero">GUESS TODAY'S PRESIDENT</h1>
+    <div class="tagline">Six guesses. Five clues. One Commander-in-Chief.</div>
+  </div>
+  <div class="sect prose">
+    <p>Presidentl is a daily puzzle about the 47 presidencies of the United States. Each day at
+    midnight a new president is chosen in secret, and everyone gets the same puzzle. You have six
+    guesses. Every guess reveals how close you stand on five measures: their number in order, how
+    many vice presidents served under them, the year they were sworn in, their party, and how many
+    terms they held. Green is exact, gold is close, and arrows point you toward the answer.</p>
+    <p>There is also a Pub Quiz — match presidents to their vice presidents, to the events of their
+    term, or to their years in office; name the portrait; or drag them into chronological order — at
+    easy, medium or hard difficulty.</p>
+    <p>Free, no account, a new puzzle every midnight.
+    <a href="/about">About</a> · <a href="/privacy">Privacy &amp; Terms</a></p>
+    <noscript><p><b>Presidentl needs JavaScript to play.</b> Please enable it and reload.</p></noscript>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -429,8 +453,8 @@ function header(active){
       </div>
       <div class="menu hide" id="menu">
         <button onclick="navTo('/stats')">STATS</button>
-        <button onclick="navTo('/about')">ABOUT</button>
-        <button onclick="navTo('/privacy')">PRIVACY &amp; TERMS</button>
+        <a href="/about">ABOUT</a>
+        <a href="/privacy">PRIVACY &amp; TERMS</a>
         <button onclick="navTo('/more')">MORE GAMES</button>
       </div>
     </div>
@@ -441,7 +465,7 @@ function pageFoot(){
   return `<div class="pgfoot">
     <div class="bunting sm"></div>
     <div class="links">
-      <button onclick="navTo('/about')">ABOUT</button><button onclick="navTo('/privacy')">PRIVACY &amp; TERMS</button>
+      <a href="/about">ABOUT</a><a href="/privacy">PRIVACY &amp; TERMS</a>
     </div>
     <div class="copy">© 2026 PRESIDENTL · A NEW PUZZLE EVERY MIDNIGHT</div>
   </div>`;
@@ -557,32 +581,6 @@ function staticPage(kicker,title,bodyHTML){
   `));
   endPage();
 }
-/* About + Contact.
-   AdSense review wants three things here and nothing more: what the site is,
-   who is behind it, and a working way to reach them. */
-function About(){
-  staticPage("THE PLATFORM","ABOUT",`
-    <p><b>Presidentl</b> is a daily puzzle about the 47 presidencies of the United States.
-    Each day at midnight a new president is chosen in secret and you have six guesses. Every guess
-    reveals how close you stand on five measures: their number, how many vice presidents served
-    under them, the year they were sworn in, their party, and how many terms they held. Green is
-    exact, gold is close, and arrows point the way. The <b>Pub Quiz</b> runs endlessly alongside it.</p>
-
-    <h2>Who makes it</h2>
-    <p>Presidentl is built and maintained by <b>Keystone Dynamic</b>, a small studio making daily
-    quiz games. We also make <a href="https://orbil.app" target="_blank" rel="noopener">Orbil</a>,
-    the daily globe game.</p>
-
-    <h2>How it's funded</h2>
-    <p>Presidentl is free. It is supported by advertising. See our
-    <a href="#/privacy">privacy policy</a> for how advertising data is handled.</p>
-
-    <h2>Contact</h2>
-    <p>Email <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a> — for corrections to the
-    historical record, bug reports, or advertising enquiries. Presidential facts come from the
-    historical record and portraits are public-domain works; if we've got something wrong, tell us
-    and we'll fix it.</p>`);
-}
 /* Published contact route — AdSense review expects a working one. */
 const CONTACT_EMAIL="kstdyn@gmail.com";
 function MoreGames(){
@@ -608,68 +606,6 @@ function MoreGames(){
     </div>
   `));
   endPage();
-}
-/* Privacy + Terms.
-   Trimmed to what AdSense actually requires: disclose the data you collect, name
-   third-party ad vendors and cookies, and give the opt-outs — plus the EEA/UK
-   consent position. The California and children paragraphs are kept short but
-   deliberately not cut: they're required by law rather than by AdSense, and
-   dropping them creates exposure the policy pages exist to avoid. */
-function Privacy(){
-  staticPage("THE FINE PRINT","PRIVACY & TERMS",`
-    <p><b>Last updated:</b> ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}<br>
-    Presidentl is operated by Keystone Dynamic. There is no account and no sign-up.</p>
-
-    <h2>What we store on your device</h2>
-    <p>Your streak, record, guess distribution, today's progress and quiz difficulty are kept in your
-    browser's local storage. This is not a cookie, is never sent to us, and we cannot read it.
-    Clearing your browser data erases it permanently.</p>
-
-    <h2>Analytics</h2>
-    <p>We use Vercel Web Analytics to count visits. It is cookieless, does not fingerprint you and
-    does not track you across other sites. It records aggregate data such as page, referrer, country,
-    browser and device type. We cannot identify you from it.</p>
-
-    <h2>Advertising</h2>
-    <p>Presidentl is supported by advertising served through Google AdSense.</p>
-    <p>• Third-party vendors, including Google, use cookies to serve ads based on your prior visits
-    to this website or other websites.</p>
-    <p>• Google's use of advertising cookies enables it and its partners to serve ads to you based on
-    your visit to this site and/or other sites on the Internet.</p>
-    <p>• You may opt out of personalised advertising by visiting
-    <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google Ads Settings</a>.</p>
-    <p>• You may opt out of third-party vendors' use of cookies at
-    <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">aboutads.info/choices</a>
-    or <a href="https://optout.networkadvertising.org/" target="_blank" rel="noopener">optout.networkadvertising.org</a>.</p>
-    <p>Google may use the DoubleClick cookie or similar identifiers, and ad networks may collect IP
-    address, device identifiers and interaction data. We do not receive or control that data.</p>
-
-    <h2>EEA, UK and Switzerland</h2>
-    <p>Advertising and analytics storage are denied by default and no personalised advertising cookie
-    is set until you consent through a Google-certified consent management platform. You may change
-    or withdraw consent at any time in that tool, and you have the right to access, correct, export
-    or erase personal data and to complain to your supervisory authority. As we hold no account data,
-    such requests are best directed to Google via the links above.</p>
-
-    <h2>California</h2>
-    <p>We do not sell personal information and receive no money for personal data. Advertising
-    cookies set by Google may still count as "sharing" for cross-context behavioural advertising
-    under the CCPA/CPRA; opt out via the links above or a Global Privacy Control signal, which we
-    honour where transmitted.</p>
-
-    <h2>Children</h2>
-    <p>Presidentl is not directed to children under 13 and we do not knowingly collect personal
-    information from them.</p>
-
-    <h2>Terms</h2>
-    <p>Presidentl is provided free, for entertainment and education, with no warranty of any kind. We
-    aim to be accurate about the historical record but do not guarantee it. Presidential portraits
-    are public-domain works; biographical links point to Wikipedia, which carries its own terms and
-    privacy policy. If a portrait is not bundled, the app may request it from Wikimedia.</p>
-
-    <h2>Changes and contact</h2>
-    <p>If this policy changes materially, the date above changes. Questions:
-    <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>.</p>`);
 }
 
 /* ============================================================
@@ -1183,19 +1119,13 @@ function PhotoQuiz(){
    ============================================================ */
 const ROUTES={
   "/":Home, "/play":Daily, "/quiz":QuizMenu, "/stats":Stats,
-  "/about":About, "/privacy":Privacy, "/more":MoreGames,
-  // merged pages — old paths kept as aliases so existing links never 404
-  "/contact":About, "/terms":Privacy
+  "/more":MoreGames
 };
 const TITLES={
   "/":"Presidentl — the daily presidential guessing game",
   "/play":"Guess today's president · Presidentl",
   "/quiz":"Pub Quiz · Presidentl",
   "/stats":"Your stats · Presidentl",
-  "/about":"About & Contact · Presidentl",
-  "/privacy":"Privacy & Terms · Presidentl",
-  "/terms":"Privacy & Terms · Presidentl",
-  "/contact":"About & Contact · Presidentl",
   "/more":"More games · Presidentl"
 };
 function navTo(path){
