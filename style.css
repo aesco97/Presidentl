@@ -24,15 +24,14 @@
   @media (min-width:760px){
     body{background:var(--paper);}
     #app{max-width:none;width:100%;box-shadow:none;}
-    /* every block centers on a comfortable measure... */
-    #app>*{width:100%;max-width:920px;margin-left:auto;margin-right:auto;}
-    /* ...except the chrome, which spans the whole window */
+    /* Content sits in a comfortable centered column — buttons, board and pills
+       all share one width so nothing looks stretched. The paper field and the
+       bunting/header/footer chrome still span the whole window. */
+    #app>*{width:100%;max-width:560px;margin-left:auto;margin-right:auto;}
     #app>div:first-child,#app>.pgfoot{max-width:none;}
     .hdr,.pgfoot .bunting,.pgfoot .links,.pgfoot .copy{max-width:1200px;margin-left:auto;margin-right:auto;}
-    /* game surfaces stay on a tighter, square-friendly width.
-       Must out-specify the #app>* rule above, so scope them to #app>. */
-    #app>.board,#app>.row,#app>.searchWrap,#app>.howto{max-width:560px;}
-    .prose{max-width:720px;margin-left:auto;margin-right:auto;}
+    /* text-heavy pages get a touch more room to read (beats #app>* on specificity) */
+    #app>.prose{max-width:640px;}
     /* scale everything up a notch for desktop viewing distance */
     .hero{font-size:44px;}
     .masthead{padding:36px 24px 8px;}
@@ -52,9 +51,8 @@
     .mode-btn>div{font-size:15px;}
     .nrow{font-size:15px;padding:9px 12px;}
   }
-  /* Wide desktop: let the poster breathe a little more */
+  /* Wide desktop: just a larger masthead; the content column stays put */
   @media (min-width:1100px){
-    #app>*{max-width:1040px;}
     .hero{font-size:52px;}
   }
 
