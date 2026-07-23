@@ -54,14 +54,17 @@ const P = [
 const termLabel = p => p.end ? (p.start+"–"+p.end) : (p.start+"–present");
 
 /* Display name — presidents who served non-consecutive terms (Cleveland 22/24,
-   Trump 45/47) get a (1)/(2) suffix so their two presidencies are distinguishable.
-   p.name stays clean for Wikipedia lookups and portrait matching. */
+   Trump 45/47). The first presidency keeps the plain name; the later one gets a
+   "(2)" so the two are distinguishable. p.name stays clean for Wikipedia lookups
+   and portrait matching. */
 (function(){
   const counts={},seen={};
   P.forEach(p=>counts[p.name]=(counts[p.name]||0)+1);
   P.forEach(p=>{
-    if(counts[p.name]>1){seen[p.name]=(seen[p.name]||0)+1;p.disp=p.name+" ("+seen[p.name]+")";}
-    else p.disp=p.name;
+    if(counts[p.name]>1){
+      seen[p.name]=(seen[p.name]||0)+1;
+      p.disp = seen[p.name]===1 ? p.name : p.name+" ("+seen[p.name]+")";
+    } else p.disp=p.name;
   });
 })();
 
