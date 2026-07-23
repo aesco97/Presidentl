@@ -151,11 +151,23 @@ function toast(msg){
    SHARING — every result, always with a link back
    ============================================================ */
 const SITE="https://presidentl.app";
+// Fire a Vercel Web Analytics custom event (no-op if analytics isn't loaded).
+function vaEvent(name, data){ try{ if(window.va) window.va('event',{name, data:data||{}}); }catch(e){} }
 // Native share sheet where there is one, clipboard everywhere else.
-function shareText(txt){
-  if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); return; }
+// Every path is instrumented so we can see how often results get shared.
+function shareText(txt, surface){
+  const s=surface||"unknown";
+  vaEvent('share_click',{surface:s});
+  if(navigator.share){
+    navigator.share({text:txt})
+      .then(()=>vaEvent('share_completed',{surface:s, method:'native'}))
+      .catch(()=>vaEvent('share_dismissed',{surface:s}));   // user cancelled the sheet
+    return;
+  }
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(txt).then(()=>toast("Result copied")).catch(()=>toast("Couldn't copy"));
+    navigator.clipboard.writeText(txt)
+      .then(()=>{ vaEvent('share_completed',{surface:s, method:'copy'}); toast("Result copied"); })
+      .catch(()=>toast("Couldn't copy"));
     return;
   }
   toast("Sharing not supported");
@@ -168,7 +180,12 @@ function emojiGrid(flags, per){
 }
 // Every share ends with a link, so a screenshot in a group chat is an invitation.
 function shareResult(headline, body, path){
-  shareText([headline, body, SITE+(path||"")].filter(Boolean).join("\n"));
+  // Derive which surface was shared from the headline, for the analytics label.
+  const surface = /^PRESIDENTL No\./.test(headline) ? "daily"
+    : /Name Them All/.test(headline) ? "quiz_nameall"
+    : /Trivia/.test(headline) ? "quiz_trivia"
+    : /Learning/.test(headline) ? "quiz_learning" : "other";
+  shareText([headline, body, SITE+(path||"")].filter(Boolean).join("\n"), surface);
 }
 function shareBtn(label, fn){
   const b=el(`<button class="btn" style="margin-top:12px">${label||"Share result"}</button>`);
@@ -606,10 +623,16 @@ function Daily(){
     inner.parentNode.appendChild(factFace(target,`<b>${target.disp.toUpperCase()}</b> — No. ${target.n} · ${termLabel(target)} · ${partyShort(target.party)} · ${target.terms} term${target.terms>1?'s':''}. ${target.event}`));
     const share=el('<button class="btn" style="margin-top:12px">Share result</button>');share.onclick=shareG;
     box.appendChild(share);
+    // Puzzle's done for the day — the natural moment to send them to the quiz.
+    // A second navigation is a second pageview, i.e. no longer a bounce.
+    box.appendChild(el(`<div class="crosssell">
+      <div class="h">★ THAT'S TODAY'S ★</div>
+      <p>New puzzle at midnight. In the meantime, there's a whole Pub Quiz — Name Them All,
+      Trivia and Learning, from easy to Extra Hard.</p></div>`));
+    const q=el('<button class="btn" style="margin-top:10px">Play the Pub Quiz →</button>');q.onclick=()=>navTo('/quiz');
+    box.appendChild(q);
     const st=el('<button class="btn secondary" style="margin-top:10px">See your stats</button>');st.onclick=()=>navTo('/stats');
     box.appendChild(st);
-    const hm=el('<button class="btn secondary" style="margin-top:10px">Back to home</button>');hm.onclick=()=>navTo('/');
-    box.appendChild(hm);
   }
 
   function render(){
@@ -791,6 +814,20 @@ function nameInput(host, opts){
   return inp;
 }
 
+/* A "back to the daily" nudge for the end of any quiz round — a second
+   navigation is a second pageview, which is what turns a bounce into a session. */
+function dailyCTA(){
+  const done = loadState().dailyDone===todayStr();
+  const w=el(`<div>
+    <div class="crosssell"><div class="h">★ THE MAIN EVENT ★</div>
+      <p>${done ? "You've already solved today's puzzle — see how you did."
+                : "Haven't played today's puzzle yet? Six guesses, one secret president."}</p></div>
+    <button class="btn" style="margin-top:10px">${done?"See today's result →":"Play today's puzzle →"}</button>
+  </div>`);
+  w.querySelector("button").onclick=()=>navTo('/play');
+  return w;
+}
+
 /* ---------- setup screen ---------- */
 function QuizMenu(){
   clear();
@@ -924,6 +961,7 @@ function NameThemAll(){
     const again=el('<button class="btn secondary">Try again</button>'); again.onclick=NameThemAll; btns.appendChild(again);
     btns.appendChild(el('<div style="height:10px"></div>'));
     const back=el('<button class="btn secondary">Change setup</button>'); back.onclick=QuizMenu; btns.appendChild(back);
+    btns.appendChild(dailyCTA());
     app.appendChild(btns); endPage();
   }
 
@@ -1000,6 +1038,7 @@ function Learning(drill){
     const again=el('<button class="btn secondary">Go again</button>'); again.onclick=()=>Learning(drill); b.appendChild(again);
     b.appendChild(el('<div style="height:10px"></div>'));
     const back=el('<button class="btn secondary">Change setup</button>'); back.onclick=QuizMenu; b.appendChild(back);
+    b.appendChild(dailyCTA());
     app.appendChild(b); endPage();
   }
   function next(){
@@ -1099,6 +1138,7 @@ function Trivia(){
     const again=el('<button class="btn secondary">Play again</button>'); again.onclick=Trivia; b.appendChild(again);
     b.appendChild(el('<div style="height:10px"></div>'));
     const back=el('<button class="btn secondary">Change setup</button>'); back.onclick=QuizMenu; b.appendChild(back);
+    b.appendChild(dailyCTA());
     app.appendChild(b); endPage();
   }
   next();
@@ -1114,7 +1154,11 @@ function askTrivia(host, spec, rand, onDone, explain){
   if(spec.cat==="vp"){
     prompt=`Who was <b>${t.disp}'s</b> vice president?`; sub="MATCH THE VP";
     const fv=t.vp.split(";")[0].trim(); correctText=fv;
-    pool=P.filter(p=>p.vp!=="—"&&p.vp.split(";")[0].trim()!==fv); getText=p=>p.vp.split(";")[0].trim();
+    // Exclude any president whose (first) VP was ALSO a real VP of the target —
+    // e.g. George Clinton served Jefferson too, so offering him against Jefferson
+    // would mark a correct answer wrong. Compare against the target's FULL VP list.
+    const tvps=vpSet(t);
+    pool=P.filter(p=>p.vp!=="—" && !tvps.includes(p.vp.split(";")[0].trim())); getText=p=>p.vp.split(";")[0].trim();
   }else if(spec.cat==="event"){
     prompt=`“${t.event}”`; sub="WHICH PRESIDENT?"; correctText=t.disp;
     pool=P.filter(p=>p.name!==t.name); getText=p=>p.disp;
@@ -1167,7 +1211,10 @@ function askOrder(host,t,rand,onDone){
   host.appendChild(btn);
   btn.onclick=()=>{
     const guess=sorter.getOrder();
-    const correct=items.slice().sort((a,b)=>a.start-b.start);
+    // Harrison & Tyler (both 1841) and Garfield & Arthur (both 1881) share a start
+    // year; break ties by presidential number so the accepted order is always the
+    // true one, without relying on sort stability.
+    const correct=items.slice().sort((a,b)=>(a.start-b.start)||(a.n-b.n));
     let hits=0; guess.forEach((g,k)=>{if(g.n===correct[k].n)hits++;});
     sorter.lock(correct);
     const ok=hits===N;

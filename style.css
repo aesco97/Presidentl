@@ -16,6 +16,48 @@
     display:flex;flex-direction:column;box-shadow:0 0 40px rgba(61,51,32,.2);}
   a{color:var(--blue);} a:hover{color:var(--red);}
 
+  /* ---- Desktop: fill the window ----
+     The paper field and the bunting/header/footer chrome go edge-to-edge, so the
+     whole window is the poster. Interior content is centered and scaled up; the
+     interactive board keeps a game-width cap so tiles stay square rather than
+     stretching into slivers across a wide monitor. */
+  @media (min-width:760px){
+    body{background:var(--paper);}
+    #app{max-width:none;width:100%;box-shadow:none;}
+    /* every block centers on a comfortable measure... */
+    #app>*{width:100%;max-width:920px;margin-left:auto;margin-right:auto;}
+    /* ...except the chrome, which spans the whole window */
+    #app>div:first-child,#app>.pgfoot{max-width:none;}
+    .hdr,.pgfoot .bunting,.pgfoot .links,.pgfoot .copy{max-width:1200px;margin-left:auto;margin-right:auto;}
+    /* game surfaces stay on a tighter, square-friendly width.
+       Must out-specify the #app>* rule above, so scope them to #app>. */
+    #app>.board,#app>.row,#app>.searchWrap,#app>.howto{max-width:560px;}
+    .prose{max-width:720px;margin-left:auto;margin-right:auto;}
+    /* scale everything up a notch for desktop viewing distance */
+    .hero{font-size:44px;}
+    .masthead{padding:36px 24px 8px;}
+    .tagline{font-size:15px;}
+    .kicker{font-size:12px;}
+    .cell{height:66px;font-size:18px;}
+    .cells.labels>div{font-size:12px;}
+    .cellEmpty{height:66px;}
+    .gName{font-size:16px;}
+    .guessRow{padding:12px 14px;}
+    .searchInput{font-size:18px;padding:16px;}
+    .btn{font-size:16px;padding:16px;}
+    .opt{font-size:16px;padding:16px;}
+    .prompt{font-size:22px;}
+    .pill b{font-size:28px;}
+    .prose{font-size:15px;}
+    .mode-btn>div{font-size:15px;}
+    .nrow{font-size:15px;padding:9px 12px;}
+  }
+  /* Wide desktop: let the poster breathe a little more */
+  @media (min-width:1100px){
+    #app>*{max-width:1040px;}
+    .hero{font-size:52px;}
+  }
+
   /* Chrome */
   .bunting{height:8px;flex:none;
     background:repeating-linear-gradient(90deg,var(--red) 0 24px,var(--paper) 24px 48px,var(--blue) 48px 72px,var(--paper) 72px 96px);}
@@ -205,6 +247,11 @@
   .nrow.ok .ntick{color:var(--green);}
   .nrow.bad .ntick{color:var(--red);}
   .nrow .nsaid{margin-left:auto;font-size:11px;color:var(--ink-4);font-style:italic;}
+
+  /* Cross-sell block at end screens */
+  .crosssell{margin-top:18px;padding-top:14px;border-top:3px double var(--blue);text-align:center;}
+  .crosssell .h{font-size:11px;font-weight:900;letter-spacing:.18em;color:var(--red);}
+  .crosssell p{font-size:13px;color:var(--ink-2);line-height:1.55;margin:8px 0 0;}
 
   /* Page footer */
   .pgfoot{margin-top:auto;padding:22px 16px calc(18px + var(--safe-bot));text-align:center;}
