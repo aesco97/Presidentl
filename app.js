@@ -585,14 +585,16 @@ function Daily(){
       const matches=P.filter(p=>!guesses.includes(p.n)&&p.name.toLowerCase().includes(q)).slice(0,8);
       if(!matches.length){hideSugg();return;}
       matches.forEach(p=>{
-        const b=el(`<button data-n="${p.n}"><b>${p.disp}</b>&nbsp;<span style="color:var(--ink-4);font-weight:700;font-size:11px">No.${p.n} · ${termLabel(p)}</span></button>`);
+        // Name only — no number, year or party, which are the very clues the board reveals.
+        const b=el(`<button data-n="${p.n}"><b>${p.disp}</b></button>`);
         b.insertBefore(avatar(p,26),b.firstChild);
-        b.onclick=()=>{inp.value=p.disp;pending=p.n;hideSugg();};
+        b.onclick=()=>{inp.value=p.disp;pending=p.n;hideSugg();inp.focus();};
         sg.appendChild(b);
       });
       sg.classList.remove("hide");
     });
-    cast.onclick=()=>{
+    function doCast(){
+      hideSugg();
       if(pending!==null){submit(pending);return;}
       const q=inp.value.trim().toLowerCase();
       if(!q){toast("Name a candidate first");inp.focus();return;}
@@ -603,7 +605,9 @@ function Daily(){
       if(m.length===1) submit(m[0].n);
       else if(m.length===0) toast("No such president");
       else toast("Pick one from the list");
-    };
+    }
+    cast.onclick=doCast;
+    inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); doCast(); } });
   }
 
   function shareG(){
